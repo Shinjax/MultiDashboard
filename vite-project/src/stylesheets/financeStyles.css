@@ -1,0 +1,107 @@
+* {
+  box-sizing: border-box;
+}
+
+.financeDashboard {
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  height: 60vh;
+  font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+  color: #59687d;
+  margin-bottom: 10px;
+}
+
+.expenseTracker {
+  flex: 1.5;
+  background: #1b2330;
+  padding: 1rem;
+  margin-right: 1rem;
+  margin-top: 1rem;
+  border-radius: 4px;
+  overflow-y: auto;
+}
+
+.expenseTags {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1rem; 
+}
+
+.expenseTags input {
+  box-sizing: content-box;
+  height: 25px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  background-color: #1b1f2a;
+  border-color: transparent;
+  border-radius: 7px;
+  color: white;
+}
+
+
+.expenseTable {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  column-gap: 0.8rem;
+}
+
+.expenseTable h3 {
+  text-align: center;
+  grid-column: span 6;
+}
+
+.expenseLabels, .expenseList {
+  display: contents; 
+}
+
+
+.expenseList {
+  grid-template-columns: repeat(6, 1fr) min-content; 
+  align-items: center; 
+}
+
+.expenseList p {
+  margin: 0;
+}
+
+.expenseList button {
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  padding: 0.5rem;
+  cursor: pointer;
+  margin-right: 10px;
+}
+
+.financialChatBot {
+  flex: 1.5;
+  background: #1b2330;
+  padding: 1rem;
+  margin-right: 1rem;
+  margin-top: 1rem;
+  border-radius: 4px;
+  overflow-y: auto;
+}
+
+.financialChatBot h3 {
+  margin: 0;
+}
+
+.savingsGoals {
+  flex: 0.8;
+  background: #1b2330;
+  padding: 1rem;
+  margin-right: 1rem;
+  margin-top: 1rem;
+  border-radius: 4px;
+}
+
+.savingsGoals h3 {
+  margin: 0;
+  margin-bottom: 10px;
+}
+
+.savingsInput {
+  
+}
