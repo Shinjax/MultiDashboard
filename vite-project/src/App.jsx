@@ -1,64 +1,49 @@
-  import { useState, createElement } from "react";
+import { useState, createElement } from "react";
+import WeatherDashboard from "./components/Weather/weatherDashboard";
+import CryptoDashboard from "./components/Crypto/cryptoDashboard";
+import FinanceDashboard from "./components/Finance/financeDashboard";
+import ProgressDashboard from "./components/ProgressTracker/progressDashboard";
 
-  import TwitchDashboard from "./components/Twitch/twitchDashboard";
-  import WeatherDashboard from "./components/Weather/weatherDashboard";
-  import CryptoDashboard from "./components/Crypto/cryptoDashboard";
-  import FinanceDashboard from "./components/Finance/financeDashboard";
-  import ProgressDashboard from "./components/ProgressTracker/progressDashboard";
-  import "./stylesheets/styles.css";
-  import "./stylesheets/cryptoStyles.css";
-  import "./stylesheets/twitchStyles.css";
-  import "./stylesheets/financeStyles.css";
-  import "./stylesheets/progressStyles.css";
+function App() {
+  const [dashboards, setDashboards] = useState([]);
+  const [selectedDashboard, setSelectedDashboard] = useState(null);
 
-
-  function App() {
-    
-    const [dashboards, setDashboards] = useState([]);
-    const [selectedDashboard, setSelectedDashboard] = useState(null);
-    
-
-    const addDashboard = () => {
-      if (selectedDashboard !== null) {
-        // Find the selected dashboard option
-        const selectedOption = dashboardOptions.find(
-          (option) => option.value === selectedDashboard
-        );
-
-        // Add the unique value to the dashboards array
-        setDashboards([...dashboards, selectedOption.value]);
-        setSelectedDashboard(null);
-      }
-    };
-
-    const removeDashboard = (indexToRemove) => {
-      setDashboards((prevDashboards) =>
-        prevDashboards.filter((_, index) => index !== indexToRemove)
+  const addDashboard = () => {
+    if (selectedDashboard !== null) {
+      const selectedOption = dashboardOptions.find(
+        (option) => option.value === selectedDashboard
       );
-    };
-    
-    const componentsMap = {
-      TwitchDashboard: TwitchDashboard,
-      WeatherDashboard: WeatherDashboard,
-      CryptoDashboard: CryptoDashboard,
-      FinanceDashboard: FinanceDashboard,
-      ProgressDashboard: ProgressDashboard,
-    };
+      setDashboards([...dashboards, selectedOption.value]);
+      setSelectedDashboard(null);
+    }
+  };
 
-    const dashboardOptions = [
-      { label: "Choose Dashboard", value: null},
-      { label: "Twitch", value: "TwitchDashboard"},
-      { label: "Weather", value: "WeatherDashboard"},  
-      { label: "Crypto", value: "CryptoDashboard"},
-      { label: "Personal Finance", value: "FinanceDashboard"},
-      { label: "Personal Progress", value: "ProgressDashboard"},
-    ];
+  const removeDashboard = (indexToRemove) => {
+    setDashboards((prevDashboards) =>
+      prevDashboards.filter((_, index) => index !== indexToRemove)
+    );
+  };
 
-    return (
-      <div>
-        <div>
-          <select 
-            className = "dropDownMenu"
+  const componentsMap = {
+    WeatherDashboard,
+    CryptoDashboard,
+    FinanceDashboard,
+    ProgressDashboard,
+  };
+
+  const dashboardOptions = [
+    { label: "Choose Dashboard", value: null },
+    { label: "Weather", value: "WeatherDashboard" },
+    { label: "Crypto", value: "CryptoDashboard" },
+    { label: "Personal Finance", value: "FinanceDashboard" },
+    { label: "Personal Progress", value: "ProgressDashboard" },
+  ];
+
+  return (
+    <section className='p-6 text-black'>
+        <div className="flex items-center mb-6">
+          <select
+            className="bg-thirdColor text-secondColor rounded mr-2"
             value={selectedDashboard}
             onChange={(e) => setSelectedDashboard(e.target.value)}
           >
@@ -68,28 +53,30 @@
               </option>
             ))}
           </select>
-          <button className="addButton" onClick={addDashboard}>
-            + Add Dashboard
-          </button>
+          <button
+            className="bg-blue-500 w-8 h-8 rounded text-white"
+            onClick={addDashboard}
+          >+</button>
         </div>
-        {dashboards.map((dashboard, index) => {
-          // Use createElement to render the selected dashboard component
-          const DashboardComponent = createElement(
-            componentsMap[dashboard],
-            {}
-          );
-          return (
-            <div key={index}>
-              {DashboardComponent}
-              <button className="removeButton"
-                onClick={() => removeDashboard(index)}>
-                Remove Dashboard
-              </button>
-            </div>
-          );
-        })}
-      </div>
-    );
-  }
 
-  export default App;
+          {dashboards.map((dashboard, index) => {
+            const DashboardComponent = createElement(componentsMap[dashboard], {});
+            return (
+              <div key={index} className="mb-8"> 
+                <div className="bg-secondColor rounded-lg p-6">
+                  {DashboardComponent}
+                </div>
+                <button
+                  className="rounded bg-white mt-4 p-1 hover:bg-gray-100"
+                  onClick={() => removeDashboard(index)}
+                >
+                  Delete Dashboard
+                </button>
+              </div>
+            );
+          })}
+    </section>
+  );
+}
+
+export default App;

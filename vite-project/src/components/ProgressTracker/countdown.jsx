@@ -1,98 +1,100 @@
 import { useState, useEffect } from 'react';
 
-// note: 
-// -need to add: 
-// -start and stop timer 
-// -changing the intervals manually
-// -reset timer
+const Countdown = () => {
+  const [time, setTime] = useState({ hours: 0, minutes: 0, seconds: 0 });
+  const [isRunning, setIsRunning] = useState(false);
+  const [inputTime, setInputTime] = useState({ hours: 0, minutes: 0, seconds: 0 });
 
-const Countdown = ({ hours, minutes, seconds }) => {
-  const [remainingHours, setRemainingHours] = useState(hours);
-  const [remainingMinutes, setRemainingMinutes] = useState(minutes);
-  const [remainingSeconds, setRemainingSeconds] = useState(seconds);
- 
   useEffect(() => {
-    const interval = setInterval(() => {
-      if (remainingSeconds > 0) {
-        setRemainingSeconds((prev) => prev - 1);
-      } else if (remainingMinutes > 0) {
-        setRemainingMinutes((prev) => prev - 1);
-        setRemainingSeconds(59);
-      } else if (remainingHours > 0) {
-        setRemainingHours((prev) => prev - 1);
-        setRemainingMinutes(59);
-        setRemainingSeconds(59);
-      }
-    }, 1000);
-
+    let interval;
+    if (isRunning) {
+      interval = setInterval(() => {
+        if (time.hours === 0 && time.minutes === 0 && time.seconds === 0) {
+          clearInterval(interval);
+          setIsRunning(false);
+        } else {
+          setTime(prevTime => {
+            const newSeconds = prevTime.seconds - 1;
+            const newMinutes = newSeconds < 0 ? prevTime.minutes - 1 : prevTime.minutes;
+            const newHours = newMinutes < 0 ? prevTime.hours - 1 : prevTime.hours;
+            return {
+              hours: newHours,
+              minutes: newMinutes < 0 ? 59 : newMinutes,
+              seconds: newSeconds < 0 ? 59 : newSeconds
+            };
+          });
+        }
+      }, 1000);
+    }
     return () => clearInterval(interval);
-  }, [remainingHours, remainingMinutes, remainingSeconds]);
+  }, [isRunning, time]);
 
-  const describeArc = (x, y, radius, startAngle, endAngle) => {
-    const start = polarToCartesian(x, y, radius, endAngle);
-    const end = polarToCartesian(x, y, radius, startAngle);
-
-    const largeArcFlag = endAngle - startAngle <= 180 ? '0' : '1';
-
-    const d = [
-      'M', start.x, start.y,
-      'A', radius, radius, 0, largeArcFlag, 0, end.x, end.y
-    ].join(' ');
-
-    return d;
+  const startTimer = () => setIsRunning(true);
+  const stopTimer = () => setIsRunning(false);
+  const resetTimer = () => {
+    setIsRunning(false);
+    setTime({ hours: 0, minutes: 0, seconds: 0 });
   };
 
-  const polarToCartesian = (centerX, centerY, radius, angleInDegrees) => {
-    const angleInRadians = ((angleInDegrees - 90) * Math.PI) / 180.0;
+  const handleInputChange = (e, field) => {
+    const value = Math.max(0, parseInt(e.target.value) || 0);
+    setInputTime(prev => ({ ...prev, [field]: value }));
+  };
 
-    return {
-      x: centerX + radius * Math.cos(angleInRadians),
-      y: centerY + radius * Math.sin(angleInRadians)
-    };
+  const setTimer = () => {
+    setTime(inputTime);
+    setIsRunning(false);
   };
 
   return (
-    <div>
-      <div className="countdownWrapper">
-        <div className="countdownItem">
-          <svg className="countdownSvg" width="100" height="100">
-            <circle cx="50" cy="50" r="48" fill="none" stroke="#333" strokeWidth="4" />
-            <path
-              fill="none"
-              stroke="#61dafb"
-              strokeWidth="4"
-              d={describeArc(50, 50, 48, 0, (remainingHours / hours) * 360)}
-            />
-          </svg>
-          {String(remainingHours).padStart(2, '0')}
-          <span>hours</span>
-        </div>
-        <div className="countdownItem">
-          <svg className="countdownSvg" width="100" height="100">
-            <circle cx="50" cy="50" r="48" fill="none" stroke="#333" strokeWidth="4" />
-            <path
-              fill="none"
-              stroke="#61dafb"
-              strokeWidth="4"
-              d={describeArc(50, 50, 48, 0, (remainingMinutes / 60) * 360)}
-            />
-          </svg>
-            {String(remainingMinutes).padStart(2, '0')}
-            <span>minutes</span>
-        </div>
-        <div className="countdownItem">
-          <svg className="countdownSvg" width="100" height="100">
-            <circle cx="50" cy="50" r="48" fill="none" stroke="#333" strokeWidth="4" />
-            <path
-              fill="none"
-              stroke="#61dafb"
-              strokeWidth="4"
-              d={describeArc(50, 50, 48, 0, (remainingSeconds / 60) * 360)}
-            />
-          </svg>
-          {String(remainingSeconds).padStart(2, '0')}
-          <span>seconds</span>
-        </div>
+    <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
+      <div className="text-6xl text-white font-bold mb-4 text-center">
+        {`${String(time.hours).padStart(2, '0')}:${String(time.minutes).padStart(2, '0')}:${String(time.seconds).padStart(2, '0')}`}
+      </div>
+      <div className="flex justify-center space-x-2 mb-4">
+        <button
+          className={`px-4 py-2 rounded ${isRunning ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'} text-white`}
+          onClick={isRunning ? stopTimer : startTimer}
+        >
+          {isRunning ? 'Stop' : 'Start'}
+        </button>
+        <button
+          className="px-4 py-2 rounded bg-blue-500 hover:bg-blue-600 text-white"
+          onClick={resetTimer}
+        >
+          Reset
+        </button>
+      </div>
+      <div className="flex justify-center space-x-2 mb-4">
+        <input
+          type="number"
+          placeholder="Hours"
+          value={inputTime.hours}
+          onChange={e => handleInputChange(e, 'hours')}
+          className="w-20 px-2 py-1 text-center rounded"
+        />
+        <input
+          type="number"
+          placeholder="Minutes"
+          value={inputTime.minutes}
+          onChange={e => handleInputChange(e, 'minutes')}
+          className="w-20 px-2 py-1 text-center rounded"
+        />
+        <input
+          type="number"
+          placeholder="Seconds"
+          value={inputTime.seconds}
+          onChange={e => handleInputChange(e, 'seconds')}
+          className="w-20 px-2 py-1 text-center rounded"
+        />
+      </div>
+      <div className="flex justify-center">
+        <button
+          className="px-4 py-2 rounded bg-purple-500 hover:bg-purple-600 text-white"
+          onClick={setTimer}
+        >
+          Set Timer
+        </button>
       </div>
     </div>
   );

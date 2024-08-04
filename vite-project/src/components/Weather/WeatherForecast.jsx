@@ -1,84 +1,87 @@
-const apiKEY = "0565657847f78a00ca188622981ada91";
-
-
-import { useState } from "react";
 import axios from "axios";
+import { useState, useEffect } from "react";
+import { WiDaySunny, WiCloudy, WiFog, WiSprinkle, WiRainMix, WiRain, WiSnow, WiShowers, WiThunderstorm, WiHail } from "react-icons/wi";
 
-
-const WeatherForecast = () => {
+const WeatherForecast = ({ searchLocation }) => {
   const [forecastData, setForecastData] = useState([]);
-  const [location, setLocation] = useState("");
+  const [error, setError] = useState("");
 
-  const geolocationURL = `https://api.openweathermap.org/geo/1.0/direct?q=${location}&appid=${apiKEY}`;
-
-  const fetchGeolocation = async () => {
-    try {
-      const response = await axios.get(geolocationURL);
-      const result = response.data[0]; // Access the first element in the array
-      console.log(result)
-      console.log("Latitude:", result.lat);
-      console.log("Longitude:", result.lon);
-
-      // After fetching geolocation, call the weather forecast API
-      fetchData(result.lat, result.lon);
-    } catch (error) {
-      console.log("Error fetching coordinates:", error);
+  useEffect(() => {
+    if (searchLocation && searchLocation.trim() !== "") {
+      fetchForecastData();
     }
-  };
+  }, [searchLocation]);
 
-  const fetchData = async (latitude, longitude) => {
+  const fetchForecastData = async () => {
+    const apiKey = "6a68b9a34e09134847563b2092fed8ef"; // Replace with your actual API key
+    const url = `https://api.openweathermap.org/data/2.5/forecast?q=${searchLocation}&units=imperial&appid=${apiKey}`;
+
     try {
-      const weatherURL = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&hourly=temperature_2m&daily=weathercode,temperature_2m_max,temperature_2m_min&temperature_unit=fahrenheit&windspeed_unit=mph&timezone=auto&forecast_days=5`;
-      const response2 = await axios.get(weatherURL);
-      const weatherResult = response2.data;
-
-
-      setForecastData(weatherResult);
-      console.log(weatherResult);
-      
+      const response = await axios.get(url);
+      const dailyForecasts = response.data.list.filter((reading, index) => index % 8 === 0);
+      setForecastData(dailyForecasts);
+      setError("");
     } catch (error) {
-      console.error("Error fetching weather data:", error);
+      console.error("Error fetching forecast data:", error);
       setForecastData([]);
+      setError("Failed to fetch forecast data. Please try again.");
     }
   };
 
-  const handleKeyPress = (event) => {
-    if (event.key === "Enter") {
-      fetchGeolocation();
-      setLocation("");
+  const getWeatherIcon = (weatherCode) => {
+    switch (weatherCode) {
+      case "01d":
+      case "01n":
+        return <WiDaySunny size={40} />;
+      case "02d":
+      case "02n":
+      case "03d":
+      case "03n":
+      case "04d":
+      case "04n":
+        return <WiCloudy size={40} />;
+      case "09d":
+      case "09n":
+        return <WiShowers size={40} />;
+      case "10d":
+      case "10n":
+        return <WiRain size={40} />;
+      case "11d":
+      case "11n":
+        return <WiThunderstorm size={40} />;
+      case "13d":
+      case "13n":
+        return <WiSnow size={40} />;
+      case "50d":
+      case "50n":
+        return <WiFog size={40} />;
+      default:
+        return null;
     }
   };
 
-  
+  const formatDate = (dateString) => {
+    const options = { weekday: 'short', month: 'short', day: 'numeric' };
+    return new Date(dateString).toLocaleDateString('en-US', options);
+  };
 
   return (
-    <div className="forecastBlock">
-      <p>5 Day Forecast</p>
-      <input
-        type="text"
-        placeholder="Enter Location"
-        value={location}
-        onChange={(event) => setLocation(event.target.value)}
-        onKeyPress={handleKeyPress}
-      />
-      <div className="forecast">
-        {forecastData.daily ? (
-          forecastData.daily.time.map((day, index) => (
-            <div className="forecastCard" key={index}>
-              {day ? <p>Day: {day}</p> : null}
-              {forecastData.daily.weathercode[index] ? (
-                <p>Weather Code: {forecastData.daily.weathercode[index]}</p>
-              ) : null}
-              {forecastData.daily.temperature_2m_max[index] ? (
-                <p>High: {forecastData.daily.temperature_2m_max[index].toFixed()}°F</p>
-              ) : null}
-              {forecastData.daily.temperature_2m_min[index] ? (
-                <p>Low: {forecastData.daily.temperature_2m_min[index].toFixed()}°F</p>
-              ) : null}
+    <div className="bg-firstColor text-thirdColor p-6 rounded-lg flex flex-col h-full w-[70%]">
+      <h2 className='text-xl text-white text-center font-semibold mb-4'>5-Day Forecast</h2>
+      {error ? (
+        <p className="text-red-500 mt-4">{error}</p>
+      ) : (
+        <div className="grid grid-cols-5 gap-4">
+          {forecastData.map((forecast, index) => (
+            <div key={index} className="bg-secondColor rounded-lg p-4 text-center flex flex-col items-center">
+              <p className="font-semibold">{formatDate(forecast.dt_txt)}</p>
+              {getWeatherIcon(forecast.weather[0].icon)}
+              <p className="text-2xl font-bold">{forecast.main.temp.toFixed()}°F</p>
+              <p>{forecast.weather[0].main}</p>
             </div>
-          ))
-        ) : null}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
